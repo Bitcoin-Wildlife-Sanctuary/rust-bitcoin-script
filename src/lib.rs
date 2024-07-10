@@ -198,47 +198,47 @@ pub fn define_pushable(_: TokenStream) -> TokenStream {
             // an integer (i64), Vec<u8> as raw data and Vec<T> for any T: Pushable object that is
             // not a u8. Otherwise the Vec<u8> and Vec<T: Pushable> definitions conflict.
             trait NotU8Pushable {
-                fn bitcoin_script_push(self, builder: Builder) -> Builder;
+                fn bitcoin_script_push(&self, builder: Builder) -> Builder;
             }
             impl NotU8Pushable for i64 {
-                fn bitcoin_script_push(self, builder: Builder) -> Builder {
-                    builder.push_int(self)
+                fn bitcoin_script_push(&self, builder: Builder) -> Builder {
+                    builder.push_int(*self)
                 }
             }
             impl NotU8Pushable for i32 {
-                fn bitcoin_script_push(self, builder: Builder) -> Builder {
-                    builder.push_int(self as i64)
+                fn bitcoin_script_push(&self, builder: Builder) -> Builder {
+                    builder.push_int(*self as i64)
                 }
             }
             impl NotU8Pushable for u32 {
-                fn bitcoin_script_push(self, builder: Builder) -> Builder {
-                    builder.push_int(self as i64)
+                fn bitcoin_script_push(&self, builder: Builder) -> Builder {
+                    builder.push_int(*self as i64)
                 }
             }
             impl NotU8Pushable for usize {
-                fn bitcoin_script_push(self, builder: Builder) -> Builder {
+                fn bitcoin_script_push(&self, builder: Builder) -> Builder {
                     builder.push_int(
-                        i64::try_from(self).unwrap_or_else(|_| panic!("Usize does not fit in i64")),
+                        i64::try_from(*self).unwrap_or_else(|_| panic!("Usize does not fit in i64")),
                     )
                 }
             }
             impl NotU8Pushable for Vec<u8> {
-                fn bitcoin_script_push(self, builder: Builder) -> Builder {
-                    builder.push_slice(PushBytesBuf::try_from(self).unwrap())
+                fn bitcoin_script_push(&self, builder: Builder) -> Builder {
+                    builder.push_slice(PushBytesBuf::try_from(self.clone()).unwrap())
                 }
             }
             impl NotU8Pushable for ::bitcoin::PublicKey {
-                fn bitcoin_script_push(self, builder: Builder) -> Builder {
+                fn bitcoin_script_push(&self, builder: Builder) -> Builder {
                     builder.push_key(&self)
                 }
             }
             impl NotU8Pushable for ::bitcoin::XOnlyPublicKey {
-                fn bitcoin_script_push(self, builder: Builder) -> Builder {
+                fn bitcoin_script_push(&self, builder: Builder) -> Builder {
                     builder.push_x_only_key(&self)
                 }
             }
             impl NotU8Pushable for ::bitcoin::ScriptBuf {
-                fn bitcoin_script_push(self, builder: Builder) -> Builder {
+                fn bitcoin_script_push(&self, builder: Builder) -> Builder {
                     let mut script_vec =
                         Vec::with_capacity(builder.0.as_bytes().len() + self.as_bytes().len());
                     script_vec.extend_from_slice(builder.as_bytes());
@@ -247,25 +247,25 @@ pub fn define_pushable(_: TokenStream) -> TokenStream {
                 }
             }
             impl<T: NotU8Pushable> NotU8Pushable for Vec<T> {
-                fn bitcoin_script_push(self, mut builder: Builder) -> Builder {
-                    for pushable in self {
+                fn bitcoin_script_push(&self, mut builder: Builder) -> Builder {
+                    for pushable in self.iter() {
                         builder = pushable.bitcoin_script_push(builder);
                     }
                     builder
                 }
             }
             pub trait Pushable {
-                fn bitcoin_script_push(self, builder: Builder) -> Builder;
+                fn bitcoin_script_push(&self, builder: Builder) -> Builder;
             }
             impl<T: NotU8Pushable> Pushable for T {
-                fn bitcoin_script_push(self, builder: Builder) -> Builder {
+                fn bitcoin_script_push(&self, builder: Builder) -> Builder {
                     NotU8Pushable::bitcoin_script_push(self, builder)
                 }
             }
 
             impl Pushable for u8 {
-                fn bitcoin_script_push(self, builder: Builder) -> Builder {
-                    builder.push_int(self as i64)
+                fn bitcoin_script_push(&self, builder: Builder) -> Builder {
+                    builder.push_int(*self as i64)
                 }
             }
         }

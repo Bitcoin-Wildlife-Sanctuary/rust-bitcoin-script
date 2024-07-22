@@ -218,7 +218,8 @@ pub fn define_pushable(_: TokenStream) -> TokenStream {
             impl NotU8Pushable for usize {
                 fn bitcoin_script_push(&self, builder: Builder) -> Builder {
                     builder.push_int(
-                        i64::try_from(*self).unwrap_or_else(|_| panic!("Usize does not fit in i64")),
+                        i64::try_from(*self)
+                            .unwrap_or_else(|_| panic!("Usize does not fit in i64")),
                     )
                 }
             }
@@ -244,6 +245,11 @@ pub fn define_pushable(_: TokenStream) -> TokenStream {
                     script_vec.extend_from_slice(builder.as_bytes());
                     script_vec.extend_from_slice(self.as_bytes());
                     Builder::from(script_vec)
+                }
+            }
+            impl NotU8Pushable for &str {
+                fn bitcoin_script_push(&self, builder: Builder) -> Builder {
+                    builder.push_slice(PushBytesBuf::try_from(self.as_bytes().to_vec()).unwrap())
                 }
             }
             impl<T: NotU8Pushable> NotU8Pushable for Vec<T> {

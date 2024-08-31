@@ -133,7 +133,7 @@ pub fn define_pushable(_: TokenStream) -> TokenStream {
     quote!(
         pub mod pushable {
 
-            use bitcoin::blockdata::opcodes::{all::*, Opcode};
+            use bitcoin::blockdata::opcodes::{all::*, Opcode, OP_0, OP_TRUE};
             use bitcoin::blockdata::script::Builder as BitcoinBuilder;
             use bitcoin::blockdata::script::{Instruction, PushBytes, PushBytesBuf, Script};
             use std::convert::TryFrom;
@@ -225,7 +225,18 @@ pub fn define_pushable(_: TokenStream) -> TokenStream {
             }
             impl NotU8Pushable for Vec<u8> {
                 fn bitcoin_script_push(&self, builder: Builder) -> Builder {
-                    builder.push_slice(PushBytesBuf::try_from(self.clone()).unwrap())
+                    if self.len() == 1 && ((self[0] == 0x81) || (0 < self[0] && self[0] <= 16)) {
+                        if self[0] == 0x81 {
+                            builder.push_opcode(OP_PUSHNUM_NEG1)
+                        } else {
+                            let opcode = Opcode::from(self[0] - 1 + OP_TRUE.to_u8());
+                            builder.push_opcode(opcode)
+                        }
+                    } else if self.is_empty() {
+                        builder.push_opcode(OP_0)
+                    } else {
+                        builder.push_slice(PushBytesBuf::try_from(self.clone()).unwrap())
+                    }
                 }
             }
             impl NotU8Pushable for ::bitcoin::PublicKey {

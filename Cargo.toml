@@ -11,7 +11,7 @@ repository = "https://github.com/BitVM/rust-bitcoin-script"
 proc-macro = true
 
 [dependencies]
-bitcoin = "0.32.0"
+bitcoin = { path = "../rust-bitcoin/bitcoin" }
 quote = "1.0.23"
 proc-macro-error = "1.0.4"
 hex = "0.4.3"

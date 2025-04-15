@@ -497,7 +497,7 @@ fn opcode_from_str(s: &str) -> Result<Opcode, ()> {
         "OP_NOP1" => Ok(OP_NOP1),
         "OP_CLTV" => Ok(OP_CLTV),
         "OP_CSV" => Ok(OP_CSV),
-        "OP_NOP4" => Ok(OP_NOP4),
+        "OP_CHECKTEMPLATEVERIFY" => Ok(OP_CHECKTEMPLATEVERIFY),
         "OP_NOP5" => Ok(OP_NOP5),
         "OP_NOP6" => Ok(OP_NOP6),
         "OP_NOP7" => Ok(OP_NOP7),
